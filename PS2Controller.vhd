@@ -48,7 +48,7 @@ begin
     end if;
   end process;
 
-  PS2ASync : process (PS2Clk, PS2Data, PS2Sampler_D, ClkCnt_D, PS2State_D)
+  PS2ASync : process (PS2Clk, PS2Data, PS2Sampler_D, ClkCnt_D, PS2State_D, ToPs2Val, ToPs2Data)
   begin
     PacketVal       <= '0';
     PS2Sampler_N    <= PS2Sampler_D;
