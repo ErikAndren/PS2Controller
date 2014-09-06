@@ -49,7 +49,11 @@ begin
       PS2Data   => PS2Data,
       --
       Packet    => Packet,
-      PacketVal => PacketVal
+      PacketVal => PacketVal,
+      --
+      -- FIXME: Disable for now
+      ToPs2Val => '0',
+      ToPs2Data => (others => '0')
       );
 
   Serial : block
