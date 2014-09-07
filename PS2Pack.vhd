@@ -7,6 +7,7 @@ use work.Types.all;
 
 package PS2Pack is
   constant PS2Addr : integer := 16#00000000#;
+  constant PS2State : integer := 16#00000001#;
 end package;
 
 package body PS2Pack is

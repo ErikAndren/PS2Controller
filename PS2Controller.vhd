@@ -44,7 +44,7 @@ architecture rtl of PS2Controller is
   signal ToPs2Data_i : word(DataW-1 downto 0);
   
 begin
-  RegAccessCtrl : process (RegAccessIn, Packet_i, PacketVal_i, ToPS2Val, ToPS2Data)
+  RegAccessCtrl : process (RegAccessIn, Packet_i, PacketVal_i, ToPS2Val, ToPS2Data, PS2State_D)
   begin
     ToPS2Val_i  <= ToPS2Val;
     ToPS2Data_i <= ToPS2Data;
@@ -64,6 +64,11 @@ begin
         ToPS2Val_i  <= '1';
         ToPS2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
       end if;
+
+      if RegAccessIn.Addr = PS2State then
+        RegAccessOut.Data(PS2State_D'length-1 downto 0) <= PS2State_D;
+      end if;
+      
     end if;
   end process;
       
@@ -111,7 +116,11 @@ begin
       when 1 =>
         -- Wait for at least 100 us = at least two PS2Clk cycles @ 16 KHz
         PS2Clk <= '0';
-        ClkCnt_N <= 2 * ClkToPS2ClkRatio;
+
+        -- Set timer
+        if ClkCnt_D = 0 then
+          ClkCnt_N <= 2 * ClkToPS2ClkRatio;
+        end if;
                 
       when 2 =>
         -- Send start bit
