@@ -1,7 +1,8 @@
 FILES= \
 	PS2Controller.vhd \
 	PS2Top.vhd \
-	Pll.vhd
+	Pll.vhd \
+	tb.vhd
 
 QUARTUS_PATH=/opt/altera/13.0sp1/quartus
 
@@ -15,7 +16,7 @@ TBTOP=tb
 TB_TASK_FILE=simulation/run_tb.tcl
 VSIM_ARGS=-novopt -t 1ps -lib $(WORK_DIR) -do $(TB_TASK_FILE)
 
-MODELSIMINI_PATH=/home/erik/Development/FPGA/SG90-PWM/modelsim.ini
+MODELSIMINI_PATH=/home/erik/Development/FPGA/PS2-Test/modelsim.ini
 CC=vcom
 FLAGS=-work /tmp/work -93 -modelsimini $(MODELSIMINI_PATH)
 
