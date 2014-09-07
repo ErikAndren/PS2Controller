@@ -50,21 +50,21 @@ begin
     ToPS2Data_i <= ToPS2Data;
     RegAccessOut <= RegAccessIn;
     
-    --RegAccessOut <= Z_RegAccessRec;    
-    --if PacketVal_i = '1' then
-    --  RegAccessOut.Val                <= "1";
-    --  RegAccessOut.Data(DataW-1 downto 0) <= Packet_i;
-    --end if;
+    RegAccessOut <= Z_RegAccessRec;    
+    if PacketVal_i = '1' then
+      RegAccessOut.Val                <= "1";
+      RegAccessOut.Data(DataW-1 downto 0) <= Packet_i;
+    end if;
 
-    --if RegAccessIn.Val = "1" then
-    --  if RegAccessIn.Addr = PS2Addr then
-    --    ToPS2Val_i  <= '1';
-    --    ToPS2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
+    if RegAccessIn.Val = "1" then
+      -- Loopback
+      RegAccessOut <= RegAccessIn;
 
-    --    RegAccessOut.Val                <= "1";
-    --    RegAccessOut.Data(DataW-1 downto 0) <= RegAccessIn.Data(DataW-1 downto 0);
-    --  end if;
-    --end if;
+      if RegAccessIn.Addr = PS2Addr then
+        ToPS2Val_i  <= '1';
+        ToPS2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
+      end if;
+    end if;
   end process;
       
   PS2Sync : process (Rst_N, Clk)
