@@ -1,4 +1,5 @@
 FILES= \
+	PS2Pack.vhd \
 	PS2Controller.vhd \
 	PS2Top.vhd \
 	Pll.vhd \

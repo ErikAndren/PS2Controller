@@ -4,6 +4,8 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.Types.all;
+use work.PS2Pack.all;
+use work.SerialPack.all;
 
 entity PS2Controller is
   generic (
@@ -12,17 +14,20 @@ entity PS2Controller is
     PS2ClkFreq : positive := 16000
     );
   port (
-    Clk       : in    bit1;
-    Rst_N     : in    bit1;
+    Clk          : in    bit1;
+    Rst_N        : in    bit1;
     -- Outgoing Clk 10 - 16 KHz 
-    PS2Clk    : inout bit1;
-    PS2Data   : inout bit1;
+    PS2Clk       : inout bit1;
+    PS2Data      : inout bit1;
     --
-    ToPs2Data : in    word(DataW-1 downto 0);
-    ToPs2Val  : in    bit1;
+    ToPs2Data    : in    word(DataW-1 downto 0);
+    ToPs2Val     : in    bit1;
     --
-    Packet    : out   word(DataW-1 downto 0);
-    PacketVal : out   bit1
+    Packet       : out   word(DataW-1 downto 0);
+    PacketVal    : out   bit1;
+    --
+    RegAccessIn  : in    RegAccessRec;
+    RegAccessOut : out   RegAccessRec
     );
 end entity;
 
@@ -32,8 +37,36 @@ architecture rtl of PS2Controller is
 
   constant ClkToPS2ClkRatio : positive := ClkFreq / PS2ClkFreq;
   signal ClkCnt_N, ClkCnt_D : integer;
+  signal Packet_i           : word(DataW-1 downto 0);
+  signal PacketVal_i        : bit1;
+
+  signal ToPs2Val_i : bit1;
+  signal ToPs2Data_i : word(DataW-1 downto 0);
   
 begin
+  RegAccessCtrl : process (RegAccessIn, Packet_i, PacketVal_i, ToPS2Val, ToPS2Data)
+  begin
+    ToPS2Val_i  <= ToPS2Val;
+    ToPS2Data_i <= ToPS2Data;
+    RegAccessOut <= RegAccessIn;
+    
+    --RegAccessOut <= Z_RegAccessRec;    
+    --if PacketVal_i = '1' then
+    --  RegAccessOut.Val                <= "1";
+    --  RegAccessOut.Data(DataW-1 downto 0) <= Packet_i;
+    --end if;
+
+    --if RegAccessIn.Val = "1" then
+    --  if RegAccessIn.Addr = PS2Addr then
+    --    ToPS2Val_i  <= '1';
+    --    ToPS2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
+
+    --    RegAccessOut.Val                <= "1";
+    --    RegAccessOut.Data(DataW-1 downto 0) <= RegAccessIn.Data(DataW-1 downto 0);
+    --  end if;
+    --end if;
+  end process;
+      
   PS2Sync : process (Rst_N, Clk)
   begin
     if Rst_N = '0' then
@@ -48,9 +81,9 @@ begin
     end if;
   end process;
 
-  PS2ASync : process (PS2Clk, PS2Data, PS2Sampler_D, ClkCnt_D, PS2State_D, ToPs2Val, ToPs2Data)
+  PS2ASync : process (PS2Clk, PS2Data, PS2Sampler_D, ClkCnt_D, PS2State_D, ToPs2Val_i, ToPs2Data_i)
   begin
-    PacketVal       <= '0';
+    PacketVal_i       <= '0';
     PS2Sampler_N    <= PS2Sampler_D;
 
     PS2Clk  <= 'Z';
@@ -334,7 +367,7 @@ begin
           if PS2Data = '1' then
             -- Evaluate parity
             if (MakeParityBit(PS2Sampler_D(8-1 downto 0)) = PS2Sampler_D(8)) then
-              PacketVal <= '1';
+              PacketVal_i <= '1';
             end if;
           end if;
         end if;
@@ -343,13 +376,15 @@ begin
         PS2State_N <= (others => '0');
     end case;
 
-    if ToPs2Val = '1' then
+    if ToPs2Val_i = '1' then
       PS2State_N <= conv_word(1, PS2State_N'length);
-      PS2Sampler_N(DataW-1 downto 0) <= ToPs2Data;
+      PS2Sampler_N(DataW-1 downto 0) <= ToPs2Data_i;
     end if;
     -- Activate this to get clocks from the device
     -- PS2Data <= '0';
   end process;
 
-  Packet    <= PS2Sampler_D(DataW-1 downto 0);
+  Packet_i  <= PS2Sampler_D(DataW-1 downto 0);
+  Packet    <= Packet_i;
+  PacketVal <= PacketVal_i;
 end architecture rtl;
