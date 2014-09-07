@@ -41,6 +41,9 @@ begin
       );
   
   PS2Cont : entity work.PS2Controller
+    generic map (
+      ClkFreq => 25000000
+      )
     port map (
       Clk       => Clk25MHz,
       Rst_N     => Rst_N,
@@ -52,7 +55,7 @@ begin
       PacketVal => PacketVal,
       --
       -- FIXME: Disable for now
-      ToPs2Val => '0',
+      ToPs2Val  => '0',
       ToPs2Data => (others => '0')
       );
 
