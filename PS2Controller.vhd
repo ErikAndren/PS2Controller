@@ -11,7 +11,7 @@ entity PS2Controller is
   generic (
     DataW      : positive := 8;
     ClkFreq    : positive;
-    PS2ClkFreq : positive := 16000
+    PS2ClkFreq : positive := 10000
     );
   port (
     Clk          : in    bit1;
@@ -46,8 +46,8 @@ architecture rtl of PS2Controller is
 begin
   RegAccessCtrl : process (RegAccessIn, Packet_i, PacketVal_i, ToPS2Val, ToPS2Data, PS2State_D)
   begin
-    ToPS2Val_i  <= ToPS2Val;
-    ToPS2Data_i <= ToPS2Data;
+    ToPs2Val_i  <= ToPs2Val;
+    ToPs2Data_i <= ToPs2Data;
     RegAccessOut <= RegAccessIn;
     
     RegAccessOut <= Z_RegAccessRec;    
@@ -61,14 +61,17 @@ begin
       RegAccessOut <= RegAccessIn;
 
       if RegAccessIn.Addr = PS2Addr then
-        ToPS2Val_i  <= '1';
-        ToPS2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
+        ToPs2Val_i  <= '1';
+        ToPs2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
       end if;
 
       if RegAccessIn.Addr = PS2State then
         RegAccessOut.Data(PS2State_D'length-1 downto 0) <= PS2State_D;
       end if;
-      
+
+      if RegAccessIn.Addr = PS2Sampler then
+        RegAccessOut.Data(PS2Sampler_D'length-1 downto 0) <= PS2Sampler_D;
+      end if;      
     end if;
   end process;
       
