@@ -34,7 +34,8 @@ begin
       PS2Data  => PS2Data,
       PS2Clk   => PS2Clk,
       --
-      SerialOut => open
+      SerialOut => open,
+      SerialIn => '0'
       );  
   
 end architecture rtl;

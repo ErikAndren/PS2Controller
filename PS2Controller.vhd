@@ -8,7 +8,7 @@ use work.Types.all;
 entity PS2Controller is
   generic (
     DataW      : positive := 8;
-    ClkFreq    : positive := 50000000;
+    ClkFreq    : positive;
     PS2ClkFreq : positive := 16000
     );
   port (
@@ -347,7 +347,8 @@ begin
       PS2State_N <= conv_word(1, PS2State_N'length);
       PS2Sampler_N(DataW-1 downto 0) <= ToPs2Data;
     end if;
-    
+    -- Activate this to get clocks from the device
+    -- PS2Data <= '0';
   end process;
 
   Packet    <= PS2Sampler_D(DataW-1 downto 0);

@@ -13,6 +13,7 @@ entity PS2Top is
     PS2Data   : inout bit1;
     PS2Clk    : inout bit1;
     --
+    SerialIn  : in    bit1;
     SerialOut : out   bit1
     );
 end entity;
@@ -24,6 +25,9 @@ architecture rtl of PS2Top is
   signal Packet    : word(8-1 downto 0);
   signal PacketVal : bit1;
   signal Clk25MHz  : bit1;
+
+  signal SerData : word(8-1 downto 0);
+  signal SerDataVal : bit1;
   
 begin
   Pll25MHz : entity work.PLL
@@ -54,13 +58,12 @@ begin
       Packet    => Packet,
       PacketVal => PacketVal,
       --
-      -- FIXME: Disable for now
-      ToPs2Val  => '0',
-      ToPs2Data => (others => '0')
+      ToPs2Val  => SerDataVal,
+      ToPs2Data => SerData
       );
 
   Serial : block
-    signal Baud : word(3-1 downto 0);
+    signal Baud    : word(3-1 downto 0);
   begin
     Baud <= "010";
     
@@ -80,5 +83,21 @@ begin
         Busy      => open,
         SerialOut => SerialOut
         );
+
+    SerRead : entity work.SerialReader
+      generic map (
+        DataW   => 8,
+        ClkFreq => Clk25MHz_integer
+        )
+      port map (
+        Clk   => Clk25MHz,
+        RstN  => Rst_N,
+        Rx    => SerialIn,
+        Baud  => Baud,
+        --
+        Dout  => SerData,
+        RxRdy => SerDataVal
+        );
+    
   end block;  
 end architecture rtl;
