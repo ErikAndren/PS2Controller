@@ -44,7 +44,7 @@ architecture rtl of PS2Controller is
   signal ToPs2Data_i : word(DataW-1 downto 0);
   
 begin
-  RegAccessCtrl : process (RegAccessIn, Packet_i, PacketVal_i, ToPS2Val, ToPS2Data, PS2State_D)
+  RegAccessCtrl : process (RegAccessIn, Packet_i, PacketVal_i, ToPS2Val, ToPS2Data, PS2State_D, PS2Sampler_D)
   begin
     ToPs2Val_i  <= ToPs2Val;
     ToPs2Data_i <= ToPs2Data;
@@ -122,19 +122,41 @@ begin
 
         -- Set timer
         if ClkCnt_D = 0 then
-          ClkCnt_N <= 2 * ClkToPS2ClkRatio;
+          ClkCnt_N <= 4 * ClkToPS2ClkRatio;
         end if;
                 
       when 2 =>
         -- Send start bit
         -- Request to send
-        PS2Data <= '0';
+        PS2Data    <= '0';
+        PS2Clk     <= '0';
+        PS2State_N <= conv_word(44, PS2State_N'length);
+        
+        ---- Wait until the device has brought the clk line low
+        --if PS2Clk = '0' then
+        --  PS2State_N <= conv_word(3, PS2State_D'length);
+        --end if;
 
-        -- Wait until the device has brought the clk line low
+      when 44 =>
+        PS2Data <= '0';
+        PS2Clk <= '0';
+        if ClkCnt_D = 0 then
+          ClkCnt_N <= ClkToPS2ClkRatio;
+        end if;
+
+      when 45 =>
+        -- Release clk line
+        PS2Data <= '0';
+        if ClkCnt_D = 0 then
+          ClkCnt_N <= ClkToPS2ClkRatio;
+        end if;
+
+      when 46 =>
+        PS2Data <= '0';
         if PS2Clk = '0' then
           PS2State_N <= conv_word(3, PS2State_D'length);
         end if;
-
+        
       when 3 =>
         PS2Data <= PS2Sampler_D(0);
         if PS2Clk = '1' then
@@ -368,7 +390,7 @@ begin
 
       when 42 =>
         if PS2Clk = '1' then
-          PS2State_N <= conv_word(42, PS2State_D'length);
+          PS2State_N <= conv_word(43, PS2State_D'length);
         end if;
 
       when 43 => 
@@ -383,7 +405,7 @@ begin
             end if;
           end if;
         end if;
-        
+                
       when others =>
         PS2State_N <= (others => '0');
     end case;
