@@ -1,5 +1,6 @@
 FILES= \
 	PS2Pack.vhd \
+	SerialOutFifo.vhd \
 	PS2Controller.vhd \
 	PS2Top.vhd \
 	Pll.vhd \

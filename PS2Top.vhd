@@ -66,12 +66,14 @@ begin
       );
 
   Serial : block
-    signal Baud          : word(3-1 downto 0);
-    signal SerWriterBusy : bit1;
-    signal SerDataOutVal : bit1;
-    signal SerDataOut    : word(8-1 downto 0);
-    signal IncSerChar    : word(8-1 downto 0);
-    signal IncSerCharVal : bit1;
+    signal Baud                               : word(3-1 downto 0);
+    signal SerDataRdVal                       : bit1;
+    signal SerDataFromFifo                    : word(8-1 downto 0);
+    signal SerDataToFifo                      : word(8-1 downto 0);
+    signal SerDataRd, SerDataFifoEmpty, SerDataWr, SerWriteBusy : bit1;
+    --
+    signal IncSerChar                         : word(8-1 downto 0);
+    signal IncSerCharVal                      : bit1;
   begin
     Baud <= "010";
     
@@ -91,6 +93,43 @@ begin
         Dout  => IncSerChar,
         RxRdy => IncSerCharVal
         );
+    
+     SerCmdParser : entity work.SerialCmdParser
+       port map (
+         RstN           => Rst_N,
+         Clk            => Clk25MHz,
+         --
+         IncSerChar     => IncSerChar,
+         IncSerCharVal  => IncSerCharVal,
+         --
+         OutSerCharBusy => '0',
+         OutSerChar     => SerDataToFifo,
+         OutSerCharVal  => SerDataWr,
+         --
+         RegAccessOut   => RegAccessToPS2,
+         RegAccessIn    => RegAccessFromPS2
+       );
+
+    SerOutFifo : entity work.SerialOutFifo
+      port map (
+        clock => Clk25MHz,
+        data  => SerDataToFifo,
+        wrreq => SerDataWr,
+        --
+        rdreq => SerDataRd,
+        q     => SerDataFromFifo,
+        empty => SerDataFifoEmpty
+        );
+
+    SerDataRd <= '1' when SerDataFifoEmpty = '0' and SerWriteBusy = '0' else '0';
+    ReadFifoSync : process (Clk25MHz, Rst_N)
+    begin
+      if Rst_N = '0' then
+        SerDataRdVal <= '0';
+      elsif rising_edge(Clk25MHz) then
+        SerDataRdVal <= SerDataRd;
+      end if;
+    end process;
 
     SerWrite : entity work.SerialWriter
       generic map (
@@ -102,28 +141,12 @@ begin
         --
         Baud      => Baud,
         --
-        We        => SerDataOutVal,
-        WData     => SerDataOut,
+        We        => SerDataRdVal,
+        WData     => SerDataFromFifo,
+        Busy      => SerWriteBusy,
         --
-        Busy      => SerWriterBusy,
         SerialOut => SerialOut
         );
-    
-     SerCmdParser : entity work.SerialCmdParser
-       port map (
-         RstN           => Rst_N,
-         Clk            => Clk25MHz,
-         --
-         IncSerChar     => IncSerChar,
-         IncSerCharVal  => IncSerCharVal,
-         --
-         OutSerCharBusy => SerWriterBusy,
-         OutSerChar     => SerDataOut,
-         OutSerCharVal  => SerDataOutVal,
-         --
-         RegAccessOut   => RegAccessToPS2,
-         RegAccessIn    => RegAccessFromPS2
-       );
     
   end block;  
 end architecture rtl;

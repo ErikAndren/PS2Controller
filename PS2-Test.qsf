@@ -76,4 +76,5 @@ set_global_assignment -name VHDL_FILE ../Lib/ResetSync.vhd
 set_global_assignment -name VHDL_FILE ../Lib/Types.vhd
 set_global_assignment -name QIP_FILE Pll.qip
 set_global_assignment -name SDC_FILE "PS2-Test.sdc"
+set_global_assignment -name QIP_FILE SerialOutFifo.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
