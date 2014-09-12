@@ -71,6 +71,8 @@ begin
     signal SerDataFromFifo                    : word(8-1 downto 0);
     signal SerDataToFifo                      : word(8-1 downto 0);
     signal SerDataRd, SerDataFifoEmpty, SerDataWr, SerWriteBusy : bit1;
+    signal SerDataWr_D, SerDataWr_D2 : bit1;
+    signal Busy : bit1;
     --
     signal IncSerChar                         : word(8-1 downto 0);
     signal IncSerCharVal                      : bit1;
@@ -102,19 +104,20 @@ begin
          IncSerChar     => IncSerChar,
          IncSerCharVal  => IncSerCharVal,
          --
-         OutSerCharBusy => '0',
+         OutSerCharBusy => Busy,
          OutSerChar     => SerDataToFifo,
          OutSerCharVal  => SerDataWr,
          --
          RegAccessOut   => RegAccessToPS2,
          RegAccessIn    => RegAccessFromPS2
        );
-
+    
     SerOutFifo : entity work.SerialOutFifo
       port map (
         clock => Clk25MHz,
         data  => SerDataToFifo,
         wrreq => SerDataWr,
+        full  => Busy,
         --
         rdreq => SerDataRd,
         q     => SerDataFromFifo,
@@ -141,7 +144,7 @@ begin
         --
         Baud      => Baud,
         --
-        We        => SerDataRdVal,
+        We        => SerDataRd,
         WData     => SerDataFromFifo,
         Busy      => SerWriteBusy,
         --
