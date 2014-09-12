@@ -47,6 +47,7 @@ ENTITY SerialOutFifo IS
 		rdreq		: IN STD_LOGIC ;
 		wrreq		: IN STD_LOGIC ;
 		empty		: OUT STD_LOGIC ;
+		full		: OUT STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
 	);
 END SerialOutFifo;
@@ -55,7 +56,8 @@ END SerialOutFifo;
 ARCHITECTURE SYN OF serialoutfifo IS
 
 	SIGNAL sub_wire0	: STD_LOGIC ;
-	SIGNAL sub_wire1	: STD_LOGIC_VECTOR (7 DOWNTO 0);
+	SIGNAL sub_wire1	: STD_LOGIC ;
+	SIGNAL sub_wire2	: STD_LOGIC_VECTOR (7 DOWNTO 0);
 
 
 
@@ -77,6 +79,7 @@ ARCHITECTURE SYN OF serialoutfifo IS
 			data	: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
 			rdreq	: IN STD_LOGIC ;
 			empty	: OUT STD_LOGIC ;
+			full	: OUT STD_LOGIC ;
 			q	: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
 			wrreq	: IN STD_LOGIC 
 	);
@@ -84,7 +87,8 @@ ARCHITECTURE SYN OF serialoutfifo IS
 
 BEGIN
 	empty    <= sub_wire0;
-	q    <= sub_wire1(7 DOWNTO 0);
+	full    <= sub_wire1;
+	q    <= sub_wire2(7 DOWNTO 0);
 
 	scfifo_component : scfifo
 	GENERIC MAP (
@@ -96,7 +100,7 @@ BEGIN
 		lpm_width => 8,
 		lpm_widthu => 7,
 		overflow_checking => "OFF",
-		underflow_checking => "OFF",
+		underflow_checking => "ON",
 		use_eab => "ON"
 	)
 	PORT MAP (
@@ -105,7 +109,8 @@ BEGIN
 		rdreq => rdreq,
 		wrreq => wrreq,
 		empty => sub_wire0,
-		q => sub_wire1
+		full => sub_wire1,
+		q => sub_wire2
 	);
 
 
@@ -123,7 +128,7 @@ END SYN;
 -- Retrieval info: PRIVATE: Clock NUMERIC "0"
 -- Retrieval info: PRIVATE: Depth NUMERIC "128"
 -- Retrieval info: PRIVATE: Empty NUMERIC "1"
--- Retrieval info: PRIVATE: Full NUMERIC "0"
+-- Retrieval info: PRIVATE: Full NUMERIC "1"
 -- Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone II"
 -- Retrieval info: PRIVATE: LE_BasedFIFO NUMERIC "0"
 -- Retrieval info: PRIVATE: LegacyRREQ NUMERIC "1"
@@ -132,7 +137,7 @@ END SYN;
 -- Retrieval info: PRIVATE: Optimize NUMERIC "0"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 -- Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
--- Retrieval info: PRIVATE: UNDERFLOW_CHECKING NUMERIC "1"
+-- Retrieval info: PRIVATE: UNDERFLOW_CHECKING NUMERIC "0"
 -- Retrieval info: PRIVATE: UsedW NUMERIC "0"
 -- Retrieval info: PRIVATE: Width NUMERIC "8"
 -- Retrieval info: PRIVATE: dc_aclr NUMERIC "0"
@@ -156,11 +161,12 @@ END SYN;
 -- Retrieval info: CONSTANT: LPM_WIDTH NUMERIC "8"
 -- Retrieval info: CONSTANT: LPM_WIDTHU NUMERIC "7"
 -- Retrieval info: CONSTANT: OVERFLOW_CHECKING STRING "OFF"
--- Retrieval info: CONSTANT: UNDERFLOW_CHECKING STRING "OFF"
+-- Retrieval info: CONSTANT: UNDERFLOW_CHECKING STRING "ON"
 -- Retrieval info: CONSTANT: USE_EAB STRING "ON"
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
 -- Retrieval info: USED_PORT: data 0 0 8 0 INPUT NODEFVAL "data[7..0]"
 -- Retrieval info: USED_PORT: empty 0 0 0 0 OUTPUT NODEFVAL "empty"
+-- Retrieval info: USED_PORT: full 0 0 0 0 OUTPUT NODEFVAL "full"
 -- Retrieval info: USED_PORT: q 0 0 8 0 OUTPUT NODEFVAL "q[7..0]"
 -- Retrieval info: USED_PORT: rdreq 0 0 0 0 INPUT NODEFVAL "rdreq"
 -- Retrieval info: USED_PORT: wrreq 0 0 0 0 INPUT NODEFVAL "wrreq"
@@ -169,6 +175,7 @@ END SYN;
 -- Retrieval info: CONNECT: @rdreq 0 0 0 0 rdreq 0 0 0 0
 -- Retrieval info: CONNECT: @wrreq 0 0 0 0 wrreq 0 0 0 0
 -- Retrieval info: CONNECT: empty 0 0 0 0 @empty 0 0 0 0
+-- Retrieval info: CONNECT: full 0 0 0 0 @full 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 8 0 @q 0 0 8 0
 -- Retrieval info: GEN_FILE: TYPE_NORMAL SerialOutFifo.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL SerialOutFifo.inc FALSE
