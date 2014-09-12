@@ -66,16 +66,16 @@ begin
       );
 
   Serial : block
-    signal Baud                               : word(3-1 downto 0);
-    signal SerDataRdVal                       : bit1;
-    signal SerDataFromFifo                    : word(8-1 downto 0);
-    signal SerDataToFifo                      : word(8-1 downto 0);
+    signal Baud                                                 : word(3-1 downto 0);
+    signal SerDataRdVal                                         : bit1;
+    signal SerDataFromFifo                                      : word(8-1 downto 0);
+    signal SerDataToFifo                                        : word(8-1 downto 0);
     signal SerDataRd, SerDataFifoEmpty, SerDataWr, SerWriteBusy : bit1;
-    signal SerDataWr_D, SerDataWr_D2 : bit1;
-    signal Busy : bit1;
+    signal SerDataWr_D, SerDataWr_D2                            : bit1;
+    signal Busy                                                 : bit1;
     --
-    signal IncSerChar                         : word(8-1 downto 0);
-    signal IncSerCharVal                      : bit1;
+    signal IncSerChar                                           : word(8-1 downto 0);
+    signal IncSerCharVal                                        : bit1;
   begin
     Baud <= "010";
     
@@ -123,17 +123,8 @@ begin
         q     => SerDataFromFifo,
         empty => SerDataFifoEmpty
         );
-
     SerDataRd <= '1' when SerDataFifoEmpty = '0' and SerWriteBusy = '0' else '0';
-    ReadFifoSync : process (Clk25MHz, Rst_N)
-    begin
-      if Rst_N = '0' then
-        SerDataRdVal <= '0';
-      elsif rising_edge(Clk25MHz) then
-        SerDataRdVal <= SerDataRd;
-      end if;
-    end process;
-
+    
     SerWrite : entity work.SerialWriter
       generic map (
         ClkFreq => Clk25MHz_integer
@@ -150,6 +141,5 @@ begin
         --
         SerialOut => SerialOut
         );
-    
   end block;  
 end architecture rtl;
