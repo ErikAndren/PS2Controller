@@ -1,3 +1,12 @@
+--
+-- PS2 Controller
+-- Implements a state machine capable of send and receiving data to a PS2 device
+--
+-- Copyright: Erik Zachrisson erik@zachrisson.info 2014
+--
+-- FIXME: Add wrapper to never drive the PS2Clk nor PS2Data.
+-- Instead, rely on the pull-up
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -91,8 +100,8 @@ begin
 
   PS2ASync : process (PS2Clk, PS2Data, PS2Sampler_D, ClkCnt_D, PS2State_D, ToPs2Val_i, ToPs2Data_i)
   begin
-    PacketVal_i       <= '0';
-    PS2Sampler_N    <= PS2Sampler_D;
+    PacketVal_i  <= '0';
+    PS2Sampler_N <= PS2Sampler_D;
 
     PS2Clk  <= 'Z';
     PS2Data <= 'Z';

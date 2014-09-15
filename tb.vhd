@@ -36,6 +36,9 @@ begin
       --
       SerialOut => open,
       SerialIn => '0'
-      );  
+      );
+
+  
+  
   
 end architecture rtl;
