@@ -1,11 +1,9 @@
 --
--- PS2 Controller
--- Implements a state machine capable of send and receiving data to a PS2 device
+-- PS2 Device
+-- Implements a state machine imposting as a PS2Deviec
 --
 -- Copyright: Erik Zachrisson erik@zachrisson.info 2014
 --
--- FIXME: Add wrapper to never drive the PS2Clk nor PS2Data.
--- Instead, rely on the pull-up
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -16,7 +14,7 @@ use work.Types.all;
 use work.PS2Pack.all;
 use work.SerialPack.all;
 
-entity PS2Controller is
+entity PS2Device is
   generic (
     DataW      : positive := 8;
     ClkFreq    : positive;
@@ -27,20 +25,14 @@ entity PS2Controller is
     Rst_N        : in    bit1;
     -- Outgoing Clk 10 - 16 KHz 
     PS2Clk       : inout bit1;
-    PS2Data      : inout bit1;
+    PS2Data      : inout bit1
     --
     ToPs2Data    : in    word(DataW-1 downto 0);
     ToPs2Val     : in    bit1;
-    --
-    Packet       : out   word(DataW-1 downto 0);
-    PacketVal    : out   bit1;
-    --
-    RegAccessIn  : in    RegAccessRec;
-    RegAccessOut : out   RegAccessRec
     );
 end entity;
 
-architecture rtl of PS2Controller is
+architecture rtl of PS2Device is
   signal PS2Sampler_D, PS2Sampler_N       : word(DataW downto 0);
   signal PS2State_N, PS2State_D           : word(6-1 downto 0);
 
@@ -57,31 +49,6 @@ begin
   begin
     ToPs2Val_i  <= ToPs2Val;
     ToPs2Data_i <= ToPs2Data;
-    RegAccessOut <= RegAccessIn;
-    
-    RegAccessOut <= Z_RegAccessRec;    
-    if PacketVal_i = '1' then
-      RegAccessOut.Val                <= "1";
-      RegAccessOut.Data(DataW-1 downto 0) <= Packet_i;
-    end if;
-
-    if RegAccessIn.Val = "1" then
-      -- Loopback
-      RegAccessOut <= RegAccessIn;
-
-      if RegAccessIn.Addr = PS2Addr then
-        ToPs2Val_i  <= '1';
-        ToPs2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
-      end if;
-
-      if RegAccessIn.Addr = PS2State then
-        RegAccessOut.Data(PS2State_D'length-1 downto 0) <= PS2State_D;
-      end if;
-
-      if RegAccessIn.Addr = PS2Sampler then
-        RegAccessOut.Data(PS2Sampler_D'length-1 downto 0) <= PS2Sampler_D;
-      end if;      
-    end if;
   end process;
       
   PS2Sync : process (Rst_N, Clk)
