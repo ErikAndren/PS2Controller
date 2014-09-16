@@ -51,6 +51,14 @@ architecture rtl of PS2Controller is
 
   signal ToPs2Val_i : bit1;
   signal ToPs2Data_i : word(DataW-1 downto 0);
+
+  function toZ(input : bit1) return bit1 is
+  begin
+    if input = '1' then
+      return 'Z';
+    end if;
+    return '0';
+  end function;
   
 begin
   RegAccessCtrl : process (RegAccessIn, Packet_i, PacketVal_i, ToPS2Val, ToPS2Data, PS2State_D, PS2Sampler_D)
@@ -156,111 +164,111 @@ begin
         end if;
         
       when 6 =>
-        PS2Data <= PS2Sampler_D(0);
+        PS2Data <= toZ(PS2Sampler_D(0));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(7, PS2State_D'length);         
         end if;
 
       when 7 =>
-        PS2Data <= PS2Sampler_D(0);
+        PS2Data <= toZ(PS2Sampler_D(0));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(8, PS2State_D'length);         
         end if;
         
       when 8 =>
-        PS2Data <= PS2Sampler_D(1);
+        PS2Data <= toZ(PS2Sampler_D(1));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(9, PS2State_D'length);         
         end if;
 
       when 9 =>
-        PS2Data <= PS2Sampler_D(1);
+        PS2Data <= toZ(PS2Sampler_D(1));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(10, PS2State_D'length);         
         end if;
 
       when 10 =>
-        PS2Data <= PS2Sampler_D(2);
+        PS2Data <= toZ(PS2Sampler_D(2));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(11, PS2State_D'length);         
         end if;
 
       when 11 =>
-        PS2Data <= PS2Sampler_D(2);
+        PS2Data <= toZ(PS2Sampler_D(2));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(12, PS2State_D'length);         
         end if;
 
       when 12 =>
-        PS2Data <= PS2Sampler_D(3);
+        PS2Data <= toZ(PS2Sampler_D(3));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(13, PS2State_D'length);         
         end if;
 
       when 13 =>
-        PS2Data <= PS2Sampler_D(3);
+        PS2Data <= toZ(PS2Sampler_D(3));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(14, PS2State_D'length);         
         end if;
 
       when 14 =>
-        PS2Data <= PS2Sampler_D(4);
+        PS2Data <= toZ(PS2Sampler_D(4));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(15, PS2State_D'length);         
         end if;
 
       when 15 =>
-        PS2Data <= PS2Sampler_D(4);
+        PS2Data <= toZ(PS2Sampler_D(4));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(16, PS2State_D'length);         
         end if;
         
       when 16 =>
-        PS2Data <= PS2Sampler_D(5);
+        PS2Data <= toZ(PS2Sampler_D(5));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(17, PS2State_D'length);         
         end if;
 
       when 17 =>
-        PS2Data <= PS2Sampler_D(5);
+        PS2Data <= toZ(PS2Sampler_D(5));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(18, PS2State_D'length);         
         end if;
 
       when 18 =>
-        PS2Data <= PS2Sampler_D(6);
+        PS2Data <= toZ(PS2Sampler_D(6));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(19, PS2State_D'length);         
         end if;
 
       when 19 =>
-        PS2Data <= PS2Sampler_D(6);
+        PS2Data <= toZ(PS2Sampler_D(6));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(20, PS2State_D'length);         
         end if;
 
       when 20 =>
-        PS2Data <= PS2Sampler_D(7);
+        PS2Data <= toZ(PS2Sampler_D(7));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(21, PS2State_D'length);         
         end if;
 
       when 21 =>
-        PS2Data <= PS2Sampler_D(7);
+        PS2Data <= toZ(PS2Sampler_D(7));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(22, PS2State_D'length);         
         end if;
         
       when 22 =>
         -- Calc odd parity
-        PS2Data <= MakeParityBit(PS2Sampler_D(8-1 downto 0));
+        PS2Data <= toZ(MakeParityBit(PS2Sampler_D(8-1 downto 0)));
         if PS2Clk = '1' then
           PS2State_N <= conv_word(23, PS2State_D'length);         
         end if;
                                  
       when 23 =>
         -- Calc odd parity
-        PS2Data <= MakeParityBit(PS2Sampler_D(8-1 downto 0));
+        PS2Data <= toZ(MakeParityBit(PS2Sampler_D(8-1 downto 0)));
         if PS2Clk = '0' then
           PS2State_N <= conv_word(24, PS2State_D'length);         
         end if;
