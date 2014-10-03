@@ -1,3 +1,6 @@
+-- Top entity for the PS2 Test
+-- Copyright Erik Zachrisson 2014
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -22,10 +25,10 @@ end entity;
 architecture rtl of PS2Top is
   constant Clk25MHz_integer : positive := 25000000;
   --
-  signal Rst_N     : bit1;
-  signal Packet    : word(8-1 downto 0);
-  signal PacketVal : bit1;
-  signal Clk25MHz  : bit1;
+  signal Rst_N              : bit1;
+  signal Packet             : word(8-1 downto 0);
+  signal PacketVal          : bit1;
+  signal Clk25MHz           : bit1;
 
   signal RegAccessToPS2, RegAccessFromPS2 : RegAccessRec;
   

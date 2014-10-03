@@ -3,10 +3,6 @@
 -- Implements a state machine capable of send and receiving data to a PS2 device
 --
 -- Copyright: Erik Zachrisson erik@zachrisson.info 2014
---
--- FIXME: Add wrapper to never drive the PS2Clk nor PS2Data.
--- Instead, rely on the pull-up
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -41,16 +37,16 @@ entity PS2Controller is
 end entity;
 
 architecture rtl of PS2Controller is
-  signal PS2Sampler_D, PS2Sampler_N       : word(DataW downto 0);
-  signal PS2State_N, PS2State_D           : word(6-1 downto 0);
-
-  constant ClkToPS2ClkRatio : positive := ClkFreq / PS2ClkFreq;
-  signal ClkCnt_N, ClkCnt_D : integer;
-  signal Packet_i           : word(DataW-1 downto 0);
-  signal PacketVal_i        : bit1;
-
-  signal ToPs2Val_i : bit1;
-  signal ToPs2Data_i : word(DataW-1 downto 0);
+  signal PS2Sampler_D, PS2Sampler_N : word(DataW downto 0);
+  signal PS2State_N, PS2State_D     : word(6-1 downto 0);
+  --
+  constant ClkToPS2ClkRatio         : positive := ClkFreq / PS2ClkFreq;
+  signal ClkCnt_N, ClkCnt_D         : integer;
+  signal Packet_i                   : word(DataW-1 downto 0);
+  signal PacketVal_i                : bit1;
+  --
+  signal ToPs2Val_i                 : bit1;
+  signal ToPs2Data_i                : word(DataW-1 downto 0);
 
   function toZ(input : bit1) return bit1 is
   begin
