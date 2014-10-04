@@ -73,18 +73,22 @@ begin
       -- Loopback
       RegAccessOut <= RegAccessIn;
 
-      if RegAccessIn.Addr = PS2Addr then
-        ToPs2Val_i  <= '1';
-        ToPs2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
-      end if;
+      if RegAccessIn.Cmd = REG_WRITE then
+        -- Write commands
+        if RegAccessIn.Addr = PS2Addr then
+          ToPs2Val_i  <= '1';
+          ToPs2Data_i <= RegAccessIn.Data(DataW-1 downto 0);
+        end if;
+      else
+        -- Read commands
+        if RegAccessIn.Addr = PS2State then
+          RegAccessOut.Data(PS2State_D'length-1 downto 0) <= PS2State_D;
+        end if;
 
-      if RegAccessIn.Addr = PS2State then
-        RegAccessOut.Data(PS2State_D'length-1 downto 0) <= PS2State_D;
+        if RegAccessIn.Addr = PS2Sampler then
+          RegAccessOut.Data(PS2Sampler_D'length-1 downto 0) <= PS2Sampler_D;
+        end if;      
       end if;
-
-      if RegAccessIn.Addr = PS2Sampler then
-        RegAccessOut.Data(PS2Sampler_D'length-1 downto 0) <= PS2Sampler_D;
-      end if;      
     end if;
   end process;
       
@@ -122,7 +126,8 @@ begin
       PS2State_N <= PS2State_D + 1;
     end if;
 
-    case conv_integer(PS2State_D) is        
+    case conv_integer(PS2State_D) is
+      -- Send procedure
       when 1 =>
         -- Wait for at least 100 us = at least two PS2Clk cycles @ 16 KHz
         PS2Clk <= '0';
@@ -289,7 +294,6 @@ begin
           PS2State_N <= (others => '0');
         end if;
 
-
       -- Start of device to host transaction
       when 27 =>
         if PS2Clk = '1' then
@@ -414,10 +418,10 @@ begin
         if PS2Clk = '0' and PS2Data = '0' then
           PS2State_N <= conv_word(27, PS2State_N'length);
         end if;
-
     end case;
 
     if ToPs2Val_i = '1' then
+      -- Jump to send procedure
       PS2State_N <= conv_word(1, PS2State_N'length);
       PS2Sampler_N(DataW-1 downto 0) <= ToPs2Data_i;
     end if;
