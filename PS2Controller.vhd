@@ -146,7 +146,7 @@ begin
         
       when 3 =>
         PS2Data <= '0';
-        PS2Clk <= '0';
+        PS2Clk  <= '0';
         if ClkCnt_D = 0 then
           ClkCnt_N <= ClkToPS2ClkRatio;
         end if;
@@ -422,7 +422,7 @@ begin
 
     if ToPs2Val_i = '1' then
       -- Jump to send procedure
-      PS2State_N <= conv_word(1, PS2State_N'length);
+      PS2State_N                     <= conv_word(1, PS2State_N'length);
       PS2Sampler_N(DataW-1 downto 0) <= ToPs2Data_i;
     end if;
   end process;
