@@ -64,11 +64,10 @@ begin
   begin
     ToPs2Val_i  <= ToPs2Val;
     ToPs2Data_i <= ToPs2Data;
-    RegAccessOut <= RegAccessIn;
     
-    RegAccessOut <= Z_RegAccessRec;    
+    RegAccessOut <= Z_RegAccessRec;
     if PacketVal_i = '1' then
-      RegAccessOut.Val                <= "1";
+      RegAccessOut.Val                    <= "1";
       RegAccessOut.Data(DataW-1 downto 0) <= Packet_i;
     end if;
 
