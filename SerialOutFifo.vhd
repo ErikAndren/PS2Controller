@@ -48,16 +48,18 @@ ENTITY SerialOutFifo IS
 		wrreq		: IN STD_LOGIC ;
 		empty		: OUT STD_LOGIC ;
 		full		: OUT STD_LOGIC ;
-		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
+		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+		usedw		: OUT STD_LOGIC_VECTOR (6 DOWNTO 0)
 	);
 END SerialOutFifo;
 
 
 ARCHITECTURE SYN OF serialoutfifo IS
 
-	SIGNAL sub_wire0	: STD_LOGIC ;
+	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (6 DOWNTO 0);
 	SIGNAL sub_wire1	: STD_LOGIC ;
-	SIGNAL sub_wire2	: STD_LOGIC_VECTOR (7 DOWNTO 0);
+	SIGNAL sub_wire2	: STD_LOGIC ;
+	SIGNAL sub_wire3	: STD_LOGIC_VECTOR (7 DOWNTO 0);
 
 
 
@@ -78,6 +80,7 @@ ARCHITECTURE SYN OF serialoutfifo IS
 			clock	: IN STD_LOGIC ;
 			data	: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
 			rdreq	: IN STD_LOGIC ;
+			usedw	: OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
 			empty	: OUT STD_LOGIC ;
 			full	: OUT STD_LOGIC ;
 			q	: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
@@ -86,9 +89,10 @@ ARCHITECTURE SYN OF serialoutfifo IS
 	END COMPONENT;
 
 BEGIN
-	empty    <= sub_wire0;
-	full    <= sub_wire1;
-	q    <= sub_wire2(7 DOWNTO 0);
+	usedw    <= sub_wire0(6 DOWNTO 0);
+	empty    <= sub_wire1;
+	full    <= sub_wire2;
+	q    <= sub_wire3(7 DOWNTO 0);
 
 	scfifo_component : scfifo
 	GENERIC MAP (
@@ -99,8 +103,8 @@ BEGIN
 		lpm_type => "scfifo",
 		lpm_width => 8,
 		lpm_widthu => 7,
-		overflow_checking => "OFF",
-		underflow_checking => "ON",
+		overflow_checking => "ON",
+		underflow_checking => "OFF",
 		use_eab => "ON"
 	)
 	PORT MAP (
@@ -108,9 +112,10 @@ BEGIN
 		data => data,
 		rdreq => rdreq,
 		wrreq => wrreq,
-		empty => sub_wire0,
-		full => sub_wire1,
-		q => sub_wire2
+		usedw => sub_wire0,
+		empty => sub_wire1,
+		full => sub_wire2,
+		q => sub_wire3
 	);
 
 
@@ -133,12 +138,12 @@ END SYN;
 -- Retrieval info: PRIVATE: LE_BasedFIFO NUMERIC "0"
 -- Retrieval info: PRIVATE: LegacyRREQ NUMERIC "1"
 -- Retrieval info: PRIVATE: MAX_DEPTH_BY_9 NUMERIC "0"
--- Retrieval info: PRIVATE: OVERFLOW_CHECKING NUMERIC "1"
+-- Retrieval info: PRIVATE: OVERFLOW_CHECKING NUMERIC "0"
 -- Retrieval info: PRIVATE: Optimize NUMERIC "0"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 -- Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
--- Retrieval info: PRIVATE: UNDERFLOW_CHECKING NUMERIC "0"
--- Retrieval info: PRIVATE: UsedW NUMERIC "0"
+-- Retrieval info: PRIVATE: UNDERFLOW_CHECKING NUMERIC "1"
+-- Retrieval info: PRIVATE: UsedW NUMERIC "1"
 -- Retrieval info: PRIVATE: Width NUMERIC "8"
 -- Retrieval info: PRIVATE: dc_aclr NUMERIC "0"
 -- Retrieval info: PRIVATE: diff_widths NUMERIC "0"
@@ -160,8 +165,8 @@ END SYN;
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "scfifo"
 -- Retrieval info: CONSTANT: LPM_WIDTH NUMERIC "8"
 -- Retrieval info: CONSTANT: LPM_WIDTHU NUMERIC "7"
--- Retrieval info: CONSTANT: OVERFLOW_CHECKING STRING "OFF"
--- Retrieval info: CONSTANT: UNDERFLOW_CHECKING STRING "ON"
+-- Retrieval info: CONSTANT: OVERFLOW_CHECKING STRING "ON"
+-- Retrieval info: CONSTANT: UNDERFLOW_CHECKING STRING "OFF"
 -- Retrieval info: CONSTANT: USE_EAB STRING "ON"
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
 -- Retrieval info: USED_PORT: data 0 0 8 0 INPUT NODEFVAL "data[7..0]"
@@ -169,6 +174,7 @@ END SYN;
 -- Retrieval info: USED_PORT: full 0 0 0 0 OUTPUT NODEFVAL "full"
 -- Retrieval info: USED_PORT: q 0 0 8 0 OUTPUT NODEFVAL "q[7..0]"
 -- Retrieval info: USED_PORT: rdreq 0 0 0 0 INPUT NODEFVAL "rdreq"
+-- Retrieval info: USED_PORT: usedw 0 0 7 0 OUTPUT NODEFVAL "usedw[6..0]"
 -- Retrieval info: USED_PORT: wrreq 0 0 0 0 INPUT NODEFVAL "wrreq"
 -- Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: @data 0 0 8 0 data 0 0 8 0
@@ -177,6 +183,7 @@ END SYN;
 -- Retrieval info: CONNECT: empty 0 0 0 0 @empty 0 0 0 0
 -- Retrieval info: CONNECT: full 0 0 0 0 @full 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 8 0 @q 0 0 8 0
+-- Retrieval info: CONNECT: usedw 0 0 7 0 @usedw 0 0 7 0
 -- Retrieval info: GEN_FILE: TYPE_NORMAL SerialOutFifo.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL SerialOutFifo.inc FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL SerialOutFifo.cmp TRUE

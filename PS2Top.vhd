@@ -8,6 +8,7 @@ use ieee.std_logic_unsigned.all;
 
 use work.Types.all;
 use work.SerialPack.all;
+use work.PS2Pack.all;
 
 entity PS2Top is
   port (
@@ -30,7 +31,7 @@ architecture rtl of PS2Top is
   signal PacketVal          : bit1;
   signal Clk25MHz           : bit1;
 
-  signal RegAccessToPS2, RegAccessFromPS2 : RegAccessRec;
+  signal RegAccessToPS2, RegAccessFromPS2, RegAccessFromFifo, RegAccess : RegAccessRec;
   
 begin
   Pll25MHz : entity work.PLL
@@ -69,16 +70,21 @@ begin
       );
 
   Serial : block
+    constant FifoSize : positive := 128;
+    constant FifoSizeW : positive := bits(FifoSize);
+    --
     signal Baud                                                 : word(3-1 downto 0);
-    signal SerDataRdVal                                         : bit1;
     signal SerDataFromFifo                                      : word(8-1 downto 0);
     signal SerDataToFifo                                        : word(8-1 downto 0);
     signal SerDataRd, SerDataFifoEmpty, SerDataWr, SerWriteBusy : bit1;
-    signal SerDataWr_D, SerDataWr_D2                            : bit1;
     signal Busy                                                 : bit1;
     --
     signal IncSerChar                                           : word(8-1 downto 0);
     signal IncSerCharVal                                        : bit1;
+    signal Level                                                : word(FifoSizeW-1 downto 0);
+    signal MaxFillLevel_N, MaxFillLevel_D                       : word(FifoSizeW-1 downto 0);
+    --
+    
   begin
     Baud <= "010";
     
@@ -107,13 +113,18 @@ begin
          IncSerChar     => IncSerChar,
          IncSerCharVal  => IncSerCharVal,
          --
+         RegAccessOut   => RegAccessToPs2,
+         RegAccessIn    => RegAccess,
+         --
          OutSerCharBusy => Busy,
          OutSerChar     => SerDataToFifo,
-         OutSerCharVal  => SerDataWr,
-         --
-         RegAccessOut   => RegAccessToPS2,
-         RegAccessIn    => RegAccessFromPS2
-       );
+         OutSerCharVal  => SerDataWr
+         );
+
+    RegAccess.Val  <= RegAccessFromPS2.Val or RegAccessFromFifo.Val;
+    RegAccess.Data <= RegAccessFromPS2.Data or RegAccessFromFifo.Data;
+    RegAccess.Addr <= RegAccessFromPS2.Addr or RegAccessFromFifo.Addr;
+    RegAccess.Cmd  <= RegAccessFromPS2.Cmd or RegAccessFromFifo.Cmd;
     
     SerOutFifo : entity work.SerialOutFifo
       port map (
@@ -122,12 +133,44 @@ begin
         wrreq => SerDataWr,
         full  => Busy,
         --
+        usedw => Level,
+        --
         rdreq => SerDataRd,
         q     => SerDataFromFifo,
         empty => SerDataFifoEmpty
         );
     SerDataRd <= '1' when SerDataFifoEmpty = '0' and SerWriteBusy = '0' else '0';
-    
+
+    AsyncProc : process (Level, MaxFillLevel_D, RegAccessToPS2)
+    begin
+      MaxFillLevel_N <= MaxFillLevel_D;
+      RegAccessFromFifo <= Z_RegAccessRec;
+      
+      if Level > MaxFillLevel_D then
+        MaxFillLevel_N <= Level;
+      end if;
+
+      if RegAccessToPs2.Val = "1" then
+        if RegAccessToPs2.Cmd = REG_READ then
+          if RegAccessToPs2.Addr = SerFifoLvl then
+            RegAccessFromFifo.Data(FifoSizeW-1 downto 0) <= Level;
+          elsif RegAccessToPs2.Addr = SerFifoMaxLvl then
+            RegAccessFromFifo.Data(FifoSizeW-1 downto 0) <= MaxFillLevel_D;
+            MaxFillLevel_N                   <= (others => '0');
+          end if;
+        end if;
+      end if;      
+    end process;
+
+    SyncProc : process (Clk25MHz, Rst_N)
+    begin
+      if Rst_N = '0' then
+        MaxFillLevel_D <= (others => '0');
+      elsif rising_edge(Clk25MHz) then
+        MaxFillLevel_D <= MaxFillLevel_N;
+      end if;
+    end process;
+
     SerWrite : entity work.SerialWriter
       generic map (
         ClkFreq => Clk25MHz_integer
