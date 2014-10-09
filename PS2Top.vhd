@@ -30,6 +30,7 @@ architecture rtl of PS2Top is
   signal Packet             : word(8-1 downto 0);
   signal PacketVal          : bit1;
   signal Clk25MHz           : bit1;
+  signal Clk64kHz           : bit1;
 
   signal RegAccessToPS2, RegAccessFromPS2, RegAccessFromFifo, RegAccess : RegAccessRec;
   
@@ -40,6 +41,17 @@ begin
       c0     => Clk25MHz
       );
 
+  Clk64kHzGen : entity work.ClkDiv
+    generic map (
+      SourceFreq => Clk25MHz_integer,
+      SinkFreq   => 32000
+      )
+    port map (
+      Clk     => Clk,
+      RstN    => Rst_N,
+      Clk_out => Clk64khz
+      );
+
   RstSync : entity work.ResetSync
     port map (
       AsyncRst => AsyncRst,
@@ -47,7 +59,7 @@ begin
       --
       Rst_N    => Rst_N
       );
-  
+
   PS2Cont : entity work.PS2Controller
     generic map (
       ClkFreq => 25000000
@@ -187,5 +199,11 @@ begin
         --
         SerialOut => SerialOut
         );
-  end block;  
+  end block;
+
+  -- Mouse decoding
+  -- Servo
+  
+  
+  
 end architecture rtl;
