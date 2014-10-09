@@ -54,7 +54,7 @@ begin
     end if;
   end process;
 
-  ASyncProc : process (Packet, PacketInVal, MouseXPos_D, MouseYPos_D, TempXPos_D, TempYPos_D)
+  ASyncProc : process (Packet, PacketInVal, MouseXPos_D, MouseYPos_D, TempXPos_D, TempYPos_D, PacketCnt_D)
     constant XOverflowBit : positive := 6;
     constant YOverflowBit : positive := 7;
     --

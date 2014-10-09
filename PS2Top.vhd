@@ -12,18 +12,23 @@ use work.PS2Pack.all;
 
 entity PS2Top is
   port (
-    AsyncRst  : in    bit1;
-    Clk       : in    bit1;
+    AsyncRst   : in    bit1;
+    Clk        : in    bit1;
     --
-    PS2Data   : inout bit1;
-    PS2Clk    : inout bit1;
+    PS2Data    : inout bit1;
+    PS2Clk     : inout bit1;
     --
-    SerialIn  : in    bit1;
-    SerialOut : out   bit1
+    SerialIn   : in    bit1;
+    SerialOut  : out   bit1;
+    --
+    YawServo   : out   bit1;
+    PitchServo : out   bit1
     );
 end entity;
 
 architecture rtl of PS2Top is
+  constant ServoResW       : positive := 8;
+  --
   constant Clk25MHz_integer : positive := 25000000;
   --
   signal Rst_N              : bit1;
@@ -31,7 +36,9 @@ architecture rtl of PS2Top is
   signal PacketVal          : bit1;
   signal Clk25MHz           : bit1;
   signal Clk64kHz           : bit1;
-
+  --
+  signal PitchPos, YawPos : word(ServoResW-1 downto 0);
+  --
   signal RegAccessToPS2, RegAccessFromPS2, RegAccessFromFifo, RegAccess : RegAccessRec;
   
 begin
@@ -71,8 +78,8 @@ begin
       PS2Clk       => PS2Clk,
       PS2Data      => PS2Data,
       --
-      Packet       => open,
-      PacketVal    => open,
+      Packet       => Packet,
+      PacketVal    => PacketVal,
       --
       ToPs2Val     => '0',
       ToPs2Data    => (others => '0'),
@@ -202,8 +209,44 @@ begin
   end block;
 
   -- Mouse decoding
-  -- Servo
+  MouseStateTrack : entity work.MouseStateTracker
+    generic map (
+      PwmResW => ServoResW
+      )
+    port map (
+      Clk         => Clk25MHz,
+      RstN        => Rst_N,
+      --
+      Packet      => Packet,
+      PacketInVal => PacketVal,
+      --
+      PwmXPos     => YawPos,
+      PwmYPos     => PitchPos
+      );
   
-  
-  
+  YawServoDriver : entity work.ServoPwm
+    generic map (
+      ResW => ServoResW
+      )
+    port map (
+      Clk   => Clk64Khz,
+      RstN  => Rst_N,
+      --
+      Pos   => YawPos,
+      --
+      Servo => YawServo
+      );
+
+  PitchServoDriver : entity work.ServoPwm
+    generic map (
+      ResW => ServoResW
+      )
+    port map (
+      Clk   => Clk64Khz,
+      RstN  => Rst_N,
+      --
+      Pos   => PitchPos,
+      --
+      Servo => PitchServo
+      );  
 end architecture rtl;

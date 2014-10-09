@@ -68,18 +68,9 @@ set_location_assignment PIN_147 -to PS2Data
 set_instance_assignment -name OUTPUT_PIN_LOAD 0 -to PS2Data
 set_location_assignment PIN_146 -to AsyncRst
 set_location_assignment PIN_160 -to SerialIn
-set_global_assignment -name VHDL_FILE ../Lib/SerialPack.vhd
-set_global_assignment -name VHDL_FILE ../Lib/SerialCmdParser.vhd
-set_global_assignment -name VHDL_FILE ../Lib/SerialReader.vhd
-set_global_assignment -name VHDL_FILE ../Lib/SerialWriter.vhd
-set_global_assignment -name VHDL_FILE PS2Top.vhd
-set_global_assignment -name VHDL_FILE PS2Pack.vhd
-set_global_assignment -name VHDL_FILE PS2Controller.vhd
-set_global_assignment -name VHDL_FILE ../Lib/ResetSync.vhd
-set_global_assignment -name VHDL_FILE ../Lib/Types.vhd
-set_global_assignment -name QIP_FILE Pll.qip
-set_global_assignment -name SDC_FILE "PS2-Test.sdc"
-set_global_assignment -name QIP_FILE SerialOutFifo.qip
+set_location_assignment PIN_128 -to PitchServo
+set_location_assignment PIN_43 -to YawServo
+
 set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name FLOW_ENABLE_IO_ASSIGNMENT_ANALYSIS ON
 set_global_assignment -name PHYSICAL_SYNTHESIS_ASYNCHRONOUS_SIGNAL_PIPELINING OFF
@@ -97,4 +88,19 @@ set_global_assignment -name FITTER_EFFORT "FAST FIT"
 set_global_assignment -name ALLOW_POWER_UP_DONT_CARE OFF
 set_global_assignment -name OPTIMIZE_POWER_DURING_SYNTHESIS OFF
 set_global_assignment -name ENABLE_DRC_SETTINGS ON
+set_global_assignment -name VHDL_FILE ../Lib/ServoPwm.vhd
+set_global_assignment -name VHDL_FILE ../Lib/ClkDiv.vhd
+set_global_assignment -name VHDL_FILE MouseStateTracker.vhd
+set_global_assignment -name VHDL_FILE ../Lib/SerialPack.vhd
+set_global_assignment -name VHDL_FILE ../Lib/SerialCmdParser.vhd
+set_global_assignment -name VHDL_FILE ../Lib/SerialReader.vhd
+set_global_assignment -name VHDL_FILE ../Lib/SerialWriter.vhd
+set_global_assignment -name VHDL_FILE PS2Top.vhd
+set_global_assignment -name VHDL_FILE PS2Pack.vhd
+set_global_assignment -name VHDL_FILE PS2Controller.vhd
+set_global_assignment -name VHDL_FILE ../Lib/ResetSync.vhd
+set_global_assignment -name VHDL_FILE ../Lib/Types.vhd
+set_global_assignment -name QIP_FILE Pll.qip
+set_global_assignment -name SDC_FILE "PS2-Test.sdc"
+set_global_assignment -name QIP_FILE SerialOutFifo.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
