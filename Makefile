@@ -3,6 +3,7 @@ FILES= \
 	SerialOutFifo.vhd \
 	PS2Controller.vhd \
 	PS2Top.vhd \
+	MouseStateTracker.vhd \
 	Pll.vhd \
 	tb.vhd
 
