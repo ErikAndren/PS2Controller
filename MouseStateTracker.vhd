@@ -14,6 +14,8 @@ entity MouseStateTracker is
     Clk         : in  bit1;
     RstN        : in  bit1;
     --
+    Streaming   : in  bit1;
+    --
     Packet      : in  word(DataW-1 downto 0);
     PacketInVal : in  bit1;
     --
@@ -54,7 +56,7 @@ begin
     end if;
   end process;
 
-  ASyncProc : process (Packet, PacketInVal, MouseXPos_D, MouseYPos_D, TempXPos_D, TempYPos_D, PacketCnt_D)
+  ASyncProc : process (Packet, PacketInVal, MouseXPos_D, MouseYPos_D, TempXPos_D, TempYPos_D, PacketCnt_D, Streaming)
     constant XOverflowBit : positive := 6;
     constant YOverflowBit : positive := 7;
     --
@@ -72,8 +74,13 @@ begin
     MouseYPos_N <= MouseYPos_D;
     TempXPos_N  <= TempXPos_D;
     TempYPos_N  <= TempYPos_D;
+
+    if Streaming = '0' then
+      MouseXPos_N <= (others => '0');
+      MouseYPos_N <= (others => '0');
+    end if;
     
-    if PacketInVal = '1' then
+    if PacketInVal = '1' and Streaming = '1' then
       if PacketCnt_D = 0 then
         TempXPos_N(SignBit)     <= Packet(XSignBit);
         TempXPos_N(OverflowBit) <= Packet(XOverflowBit);
