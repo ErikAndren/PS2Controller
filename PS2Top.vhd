@@ -27,17 +27,20 @@ entity PS2Top is
 end entity;
 
 architecture rtl of PS2Top is
-  constant ServoResW       : positive := 8;
+  constant ServoResW                                                    : positive := 8;
   --
-  constant Clk25MHz_integer : positive := 25000000;
+  constant Clk25MHz_integer                                             : positive := 25000000;
   --
-  signal Rst_N              : bit1;
-  signal Packet             : word(8-1 downto 0);
-  signal PacketVal          : bit1;
-  signal Clk25MHz           : bit1;
-  signal Clk64kHz           : bit1;
+  signal Rst_N                                                          : bit1;
+  signal Ps2DevResp                                                     : word(8-1 downto 0);
+  signal Ps2DevRespVal                                                  : bit1;
+  signal Ps2HostCmd                                                     : word(8-1 downto 0);
+  signal Ps2HostCmdVal                                                  : bit1;
+  signal Clk25MHz                                                       : bit1;
+  signal Clk64kHz                                                       : bit1;
+  signal PS2IsStreaming                                                 : bit1;
   --
-  signal PitchPos, YawPos : word(ServoResW-1 downto 0);
+  signal PitchPos, YawPos                                               : word(ServoResW-1 downto 0);
   --
   signal RegAccessToPS2, RegAccessFromPS2, RegAccessFromFifo, RegAccess : RegAccessRec;
   
@@ -67,6 +70,20 @@ begin
       Rst_N    => Rst_N
       );
 
+  PS2Initer : entity work.PS2Init
+    port map (
+      Clk           => Clk25MHz,
+      Rst_N         => Rst_N,
+      --
+      PS2HostCmd    => Ps2HostCmd,
+      PS2HostCmdVal => Ps2HostCmdVal,
+      --
+      PS2DevResp    => Ps2DevResp,
+      PS2DevRespVal => Ps2DevRespVal,
+      --
+      Streaming     => PS2IsStreaming
+      );
+
   PS2Cont : entity work.PS2Controller
     generic map (
       ClkFreq => 25000000
@@ -78,11 +95,11 @@ begin
       PS2Clk       => PS2Clk,
       PS2Data      => PS2Data,
       --
-      Packet       => Packet,
-      PacketVal    => PacketVal,
+      Packet       => Ps2DevResp,
+      PacketVal    => Ps2DevRespVal,
       --
-      ToPs2Val     => '0',
-      ToPs2Data    => (others => '0'),
+      ToPs2Data    => Ps2HostCmd,
+      ToPs2Val     => Ps2HostCmdVal,
       --
       RegAccessIn  => RegAccessToPS2,
       RegAccessOut => RegAccessFromPS2
@@ -208,7 +225,6 @@ begin
         );
   end block;
 
-  -- Mouse decoding
   MouseStateTrack : entity work.MouseStateTracker
     generic map (
       PwmResW => ServoResW
@@ -217,8 +233,10 @@ begin
       Clk         => Clk25MHz,
       RstN        => Rst_N,
       --
-      Packet      => Packet,
-      PacketInVal => PacketVal,
+      Streaming   => PS2IsStreaming,
+      --
+      Packet      => Ps2DevResp,
+      PacketInVal => Ps2DevRespVal,
       --
       PwmXPos     => YawPos,
       PwmYPos     => PitchPos
