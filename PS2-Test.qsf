@@ -88,6 +88,7 @@ set_global_assignment -name FITTER_EFFORT "FAST FIT"
 set_global_assignment -name ALLOW_POWER_UP_DONT_CARE OFF
 set_global_assignment -name OPTIMIZE_POWER_DURING_SYNTHESIS OFF
 set_global_assignment -name ENABLE_DRC_SETTINGS ON
+set_global_assignment -name VHDL_FILE PS2Init.vhd
 set_global_assignment -name VHDL_FILE ../Lib/ServoPwm.vhd
 set_global_assignment -name VHDL_FILE ../Lib/ClkDiv.vhd
 set_global_assignment -name VHDL_FILE MouseStateTracker.vhd
