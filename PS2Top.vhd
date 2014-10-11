@@ -42,7 +42,7 @@ architecture rtl of PS2Top is
   --
   signal PitchPos, YawPos                                               : word(ServoResW-1 downto 0);
   --
-  signal RegAccessToPS2, RegAccessFromPS2, RegAccessFromFifo, RegAccess : RegAccessRec;
+  signal RegAccessFromMouseTracker, RegAccessFromPs2Init, RegAccessToPS2, RegAccessFromPS2, RegAccessFromFifo, RegAccess : RegAccessRec;
   
 begin
   Pll25MHz : entity work.PLL
@@ -81,7 +81,10 @@ begin
       PS2DevResp    => Ps2DevResp,
       PS2DevRespVal => Ps2DevRespVal,
       --
-      Streaming     => PS2IsStreaming
+      Streaming     => PS2IsStreaming,
+      --
+      RegAccessIn =>  RegAccessToPS2,
+      RegAccessOut => RegAccessFromPs2Init
       );
 
   PS2Cont : entity work.PS2Controller
@@ -157,10 +160,10 @@ begin
          OutSerCharVal  => SerDataWr
          );
 
-    RegAccess.Val  <= RegAccessFromPS2.Val or RegAccessFromFifo.Val;
-    RegAccess.Data <= RegAccessFromPS2.Data or RegAccessFromFifo.Data;
-    RegAccess.Addr <= RegAccessFromPS2.Addr or RegAccessFromFifo.Addr;
-    RegAccess.Cmd  <= RegAccessFromPS2.Cmd or RegAccessFromFifo.Cmd;
+    RegAccess.Val  <= RegAccessFromPS2.Val or RegAccessFromFifo.Val or RegAccessFromPs2Init.Val or RegAccessFromMouseTracker.Val;
+    RegAccess.Data <= RegAccessFromPS2.Data or RegAccessFromFifo.Data or RegAccessFromPs2Init.Data or RegAccessFromMouseTracker.Data;
+    RegAccess.Addr <= RegAccessFromPS2.Addr or RegAccessFromFifo.Addr or RegAccessFromPs2Init.Addr or RegAccessFromMouseTracker.Addr;
+    RegAccess.Cmd  <= RegAccessFromPS2.Cmd or RegAccessFromFifo.Cmd or RegAccessFromPs2Init.Cmd or RegAccessFromMouseTracker.Cmd;
     
     SerOutFifo : entity work.SerialOutFifo
       port map (
@@ -230,16 +233,19 @@ begin
       PwmResW => ServoResW
       )
     port map (
-      Clk         => Clk25MHz,
-      RstN        => Rst_N,
+      Clk          => Clk25MHz,
+      RstN         => Rst_N,
       --
-      Streaming   => PS2IsStreaming,
+      Streaming    => PS2IsStreaming,
       --
-      Packet      => Ps2DevResp,
-      PacketInVal => Ps2DevRespVal,
+      Packet       => Ps2DevResp,
+      PacketInVal  => Ps2DevRespVal,
       --
-      PwmXPos     => YawPos,
-      PwmYPos     => PitchPos
+      PwmXPos      => YawPos,
+      PwmYPos      => PitchPos,
+      --
+      RegAccessIn  => RegAccessToPs2,
+      RegAccessOut => RegAccessFromMouseTracker
       );
   
   YawServoDriver : entity work.ServoPwm
