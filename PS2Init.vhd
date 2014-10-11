@@ -4,6 +4,8 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.Types.all;
+use work.SerialPack.all;
+use work.Ps2Pack.all;
 
 entity PS2Init is
   generic (
@@ -19,7 +21,10 @@ entity PS2Init is
     PS2DevResp    : in  word(DataW-1 downto 0);
     PS2DevRespVal : in  bit1;
     --
-    Streaming     : out bit1
+    Streaming     : out bit1;
+    --
+    RegAccessIn  : in    RegAccessRec;
+    RegAccessOut : out   RegAccessRec
     );
 end entity;
 
@@ -35,7 +40,7 @@ begin
     end if;
   end process;
 
-  AsyncProc : process (PS2InitFSM_D, PS2DevResp, PS2DevRespVal)
+  AsyncProc : process (PS2InitFSM_D, PS2DevResp, PS2DevRespVal, RegAccessIn)
     variable CmdVal : bit1;
   begin
     PS2InitFSM_N  <= PS2InitFSM_D;
@@ -49,9 +54,11 @@ begin
           if PS2DevResp = 16#AA# then
              -- Received BAT OK
              PS2InitFsm_N <= PS2InitFsm_D + 1;
-          else
-            -- Try with reset again
-             PS2InitFsm_N <= (others => '0');
+
+          -- FIXME
+          --else
+          --  -- Try with reset again
+          --   PS2InitFsm_N <= (others => '0');
           end if;
         end if;
 
@@ -60,9 +67,10 @@ begin
           if PS2DevResp = 16#00# then
              -- Expect mouse = 0x00
              PS2InitFsm_N <= PS2InitFsm_D + 1;
-          else
-            -- Try with reset again
-             PS2InitFsm_N <= (others => '0');            
+          -- FIXME
+          --else
+          --  -- Try with reset again
+          --   PS2InitFsm_N <= (others => '0');            
           end if;
         end if;
 
@@ -77,9 +85,10 @@ begin
           if PS2DevResp = 16#FA# then
              -- Expect Acknowledge
              PS2InitFsm_N <= PS2InitFsm_D + 1;
-          else
-            -- Try with reset again
-             PS2InitFsm_N <= (others => '0');            
+          -- FIXME
+          --else
+          --  -- Try with reset again
+          --   PS2InitFsm_N <= (others => '0');            
           end if;
         end if;
 
@@ -93,5 +102,19 @@ begin
         PS2HostCmdVal <= '1';
         PS2InitFsm_N  <= conv_word(1, PS2InitFsm_N'length);        
     end case;
+
+    RegAccessOut <= Z_RegAccessRec;
+    if RegAccessIn.Val = "1" then
+      if RegAccessIn.Addr = PS2InitState then
+        if RegAccessIn.Cmd = REG_READ then
+          RegAccessOut.Val <= "1";
+          RegAccessOut.Data(PS2InitFsm_D'length-1 downto 0) <= PS2InitFsm_D;
+          RegAccessOut.Cmd <= conv_word(REG_READ, RegAccessOut.Cmd'length);
+        else
+          PS2InitFsm_N <= RegAccessIn.Data(PS2InitFsm_N'length-1 downto 0);
+        end if;
+      end if;
+    end if;
   end process;
+  
 end architecture rtl;
