@@ -66,11 +66,19 @@ begin
     ToPs2Data_i <= ToPs2Data;
     
     RegAccessOut <= Z_RegAccessRec;
+    
     if PacketVal_i = '1' then
       RegAccessOut.Val                    <= "1";
+      RegAccessOut.Cmd                    <= conv_word(REG_READ, RegAccessOut.Cmd'length);
       RegAccessOut.Data(DataW-1 downto 0) <= Packet_i;
     end if;
 
+    if ToPs2Val = '1' then
+      RegAccessOut.Val <= "1";
+      RegAccessOut.Cmd <= conv_word(REG_WRITE, RegAccessOut.Cmd'length);
+      RegAccessOut.Data(ToPs2Data'length-1 downto 0) <= ToPS2Data;
+    end if;
+    
     if RegAccessIn.Val = "1" then
       -- Loopback
       RegAccessOut <= RegAccessIn;
