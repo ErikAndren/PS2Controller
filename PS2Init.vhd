@@ -24,7 +24,7 @@ entity PS2Init is
 end entity;
 
 architecture rtl of PS2Init is
-  signal PS2InitFSM_N, PS2InitFSM_D : word(2-1 downto 0);
+  signal PS2InitFSM_N, PS2InitFSM_D : word(3-1 downto 0);
 begin
   SyncProc : process (Clk, Rst_N)
   begin
@@ -35,7 +35,7 @@ begin
     end if;
   end process;
 
-  AsyncProc : process (PS2InitFSM_D)
+  AsyncProc : process (PS2InitFSM_D, PS2DevResp, PS2DevRespVal)
     variable CmdVal : bit1;
   begin
     PS2InitFSM_N  <= PS2InitFSM_D;
