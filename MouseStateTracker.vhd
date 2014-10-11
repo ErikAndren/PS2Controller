@@ -4,6 +4,8 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.Types.all;
+use work.SerialPack.all;
+use work.Ps2Pack.all;
 
 entity MouseStateTracker is
   generic (
@@ -20,7 +22,10 @@ entity MouseStateTracker is
     PacketInVal : in  bit1;
     --
     PwmXPos     : out word(PwmResW-1 downto 0);
-    PwmYPos     : out word(PwmResW-1 downto 0)
+    PwmYPos     : out word(PwmResW-1 downto 0);
+    --
+    RegAccessIn  : in    RegAccessRec;
+    RegAccessOut : out   RegAccessRec
     );
 end entity;
 
@@ -56,7 +61,7 @@ begin
     end if;
   end process;
 
-  ASyncProc : process (Packet, PacketInVal, MouseXPos_D, MouseYPos_D, TempXPos_D, TempYPos_D, PacketCnt_D, Streaming)
+  ASyncProc : process (Packet, PacketInVal, MouseXPos_D, MouseYPos_D, TempXPos_D, TempYPos_D, PacketCnt_D, Streaming, RegAccessIn)
     constant XOverflowBit : positive := 6;
     constant YOverflowBit : positive := 7;
     --
@@ -76,8 +81,11 @@ begin
     TempYPos_N  <= TempYPos_D;
 
     if Streaming = '0' then
-      MouseXPos_N <= (others => '0');
-      MouseYPos_N <= (others => '0');
+      MouseXPos_N                   <= (others => '0');
+      MouseXPos_N(MouseXPos_D'high) <= '1';
+      --
+      MouseYPos_N                   <= (others => '0');
+      MouseYPos_N(MouseYPos_D'high) <= '1';
     end if;
     
     if PacketInVal = '1' and Streaming = '1' then
@@ -141,6 +149,19 @@ begin
               MouseYPos_N <= (others => '0');
             end if;
           end if;
+        end if;
+      end if;
+    end if;
+
+    RegAccessOut <= Z_RegAccessRec;
+    if RegAccessIn.Val = "1" then
+      if RegAccessIn.Addr = MousePacketState then
+        if RegAccessIn.Cmd = REG_READ then
+          RegAccessOut.Val <= "1";
+          RegAccessOut.Data(PacketCnt_D'length-1 downto 0) <= PacketCnt_D;
+          RegAccessOut.Cmd <= conv_word(REG_READ, RegAccessOut.Cmd'length);
+        else
+          PacketCnt_N <= RegAccessIn.Data(PacketCnt_D'length-1 downto 0);
         end if;
       end if;
     end if;
