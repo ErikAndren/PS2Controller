@@ -30,67 +30,83 @@ end entity;
 
 architecture rtl of PS2Init is
   signal PS2InitFSM_N, PS2InitFSM_D : word(3-1 downto 0);
+  signal LastRespVal_N, LastRespVal_D : word(DataW-1 downto 0);
 begin
   SyncProc : process (Clk, Rst_N)
   begin
     if Rst_N = '0' then
       PS2InitFSM_D <= (others => '0');
+      LastRespVal_D <= (others => '0');
     elsif rising_edge(Clk) then
       PS2InitFSM_D <= PS2InitFSM_N;
+      LastRespVal_D <= LastRespVal_N;
     end if;
   end process;
 
-  AsyncProc : process (PS2InitFSM_D, PS2DevResp, PS2DevRespVal, RegAccessIn)
+  AsyncProc : process (PS2InitFSM_D, PS2DevResp, PS2DevRespVal, RegAccessIn, LastRespVal_D)
     variable CmdVal : bit1;
   begin
     PS2InitFSM_N  <= PS2InitFSM_D;
     PS2HostCmdVal <= '0';
     PS2HostCmd    <= (others => '0');
     Streaming     <= '0';
+    LastRespVal_N <= LastRespVal_D;
 
-    case conv_integer(PS2InitFsm_D) is        
+    if PS2DevRespVal = '1' then
+      LastRespVal_N <= PS2DevResp;
+    end if;
+
+    case conv_integer(PS2InitFsm_D) is
       when 1 =>
+        if PS2DevRespVal = '1' then
+          -- Expect Ack
+          if PS2DevResp = 16#FA# then
+             PS2InitFsm_N <= PS2InitFsm_D + 1;
+          else
+            -- Try with reset again
+             PS2InitFsm_N <= (others => '0');
+          end if;
+        end if;
+      
+      when 2 =>
         if PS2DevRespVal = '1' then
           if PS2DevResp = 16#AA# then
              -- Received BAT OK
              PS2InitFsm_N <= PS2InitFsm_D + 1;
 
-          -- FIXME
-          --else
-          --  -- Try with reset again
-          --   PS2InitFsm_N <= (others => '0');
-          end if;
-        end if;
-
-      when 2 =>
-        if PS2DevRespVal = '1' then
-          if PS2DevResp = 16#00# then
-             -- Expect mouse = 0x00
-             PS2InitFsm_N <= PS2InitFsm_D + 1;
-          -- FIXME
-          --else
-          --  -- Try with reset again
-          --   PS2InitFsm_N <= (others => '0');            
+          else
+            -- Try with reset again
+             PS2InitFsm_N <= (others => '0');
           end if;
         end if;
 
       when 3 =>
+        if PS2DevRespVal = '1' then
+          if PS2DevResp = 16#00# then
+             -- Expect mouse = 0x00
+             PS2InitFsm_N <= PS2InitFsm_D + 1;
+          else
+            -- Try with reset again
+             PS2InitFsm_N <= (others => '0');            
+          end if;
+        end if;
+
+      when 4 =>
         -- Enable data reporting
         PS2HostCmd    <= conv_word(16#F4#, PS2HostCmd'length);
         PS2HostCmdVal <= '1';
         PS2InitFsm_N  <= PS2InitFsm_D + 1;
 
-      when 4 =>
-        if PS2DevRespVal = '1' then
-          if PS2DevResp = 16#FA# then
-             -- Expect Acknowledge
-             PS2InitFsm_N <= PS2InitFsm_D + 1;
-          -- FIXME
-          --else
-          --  -- Try with reset again
-          --   PS2InitFsm_N <= (others => '0');            
-          end if;
-        end if;
+      --when 5 =>
+      --  if PS2DevRespVal = '1' then
+      --    if PS2DevResp = 16#FA# then
+      --       -- Expect Acknowledge
+      --       PS2InitFsm_N <= PS2InitFsm_D + 1;
+      --    else
+      --      -- Try with reset again
+      --       PS2InitFsm_N <= (others => '0');            
+      --    end if;
+      --  end if;
 
       when 5 =>
         -- Done state, we are now in stream mode with reporting enabled
@@ -107,11 +123,17 @@ begin
     if RegAccessIn.Val = "1" then
       if RegAccessIn.Addr = PS2InitState then
         if RegAccessIn.Cmd = REG_READ then
-          RegAccessOut.Val <= "1";
+          RegAccessOut.Val                                  <= "1";
           RegAccessOut.Data(PS2InitFsm_D'length-1 downto 0) <= PS2InitFsm_D;
-          RegAccessOut.Cmd <= conv_word(REG_READ, RegAccessOut.Cmd'length);
+          RegAccessOut.Cmd                                  <= conv_word(REG_READ, RegAccessOut.Cmd'length);
         else
           PS2InitFsm_N <= RegAccessIn.Data(PS2InitFsm_N'length-1 downto 0);
+        end if;
+      elsif RegAccessIn.Addr = Ps2InitLastResp then
+        if RegAccessIn.Cmd = REG_READ then
+          RegAccessOut.Val                                   <= "1";
+          RegAccessOut.Data(LastRespVal_D'length-1 downto 0) <= LastRespVal_D;
+          RegAccessOut.Cmd                                   <= conv_word(REG_READ, RegAccessOut.Cmd'length);
         end if;
       end if;
     end if;
