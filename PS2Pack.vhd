@@ -6,15 +6,18 @@ use ieee.std_logic_unsigned.all;
 use work.Types.all;
 
 package PS2Pack is
-  constant PS2Addr       : integer := 16#00000000#;
-  constant PS2State      : integer := 16#00000001#;
-  constant PS2Sampler    : integer := 16#00000002#;
-  constant PS2InitState  : integer := 16#00000003#;
+  constant PS2Addr          : integer := 16#00000000#;
+  constant PS2State         : integer := 16#00000001#;
+  constant PS2Sampler       : integer := 16#00000002#;
+  constant PS2InitState     : integer := 16#00000003#;
+  constant Ps2InitLastResp  : integer := 16#00000004#;
   --
-  constant MousePacketState  : integer := 16#00000004#;  
+  constant MousePacketState : integer := 16#00000020#;
+  constant MouseXPos        : integer := 16#00000021#;
+  constant MouseYPos        : integer := 16#00000022#;
   --
-  constant SerFifoLvl    : integer := 16#00000010#;
-  constant SerFifoMaxLvl : integer := 16#00000011#;
+  constant SerFifoLvl       : integer := 16#00000010#;
+  constant SerFifoMaxLvl    : integer := 16#00000011#;
   --
 
 end package;
