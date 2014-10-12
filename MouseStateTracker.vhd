@@ -116,8 +116,8 @@ begin
               MouseXPos_N <= (others => '1');
             end if;
           else
-            if MouseXPos_D - Packet >= xt0(MouseResW) then
-              MouseXPos_N <= MouseXPos_D - Packet;
+            if MouseXPos_D - ((not Packet) + 1) >= xt0(MouseResW) then
+              MouseXPos_N <= MouseXPos_D - ((not Packet) + 1);
             else
               MouseXPos_N <= (others => '0');
             end if;
