@@ -127,7 +127,7 @@ begin
       elsif PacketCnt_D = 2 then
         PacketCnt_N              <= "00";
 
-        -- Decode X
+        -- Decode Y
         if TempYPos_D(OverflowBit) = '1' then
           if TempYPos_D(SignBit) = Pos then
             MouseYPos_N <= (others => '1');
@@ -162,6 +162,16 @@ begin
           RegAccessOut.Cmd <= conv_word(REG_READ, RegAccessOut.Cmd'length);
         else
           PacketCnt_N <= RegAccessIn.Data(PacketCnt_D'length-1 downto 0);
+        end if;
+      end if;
+
+      if RegAccessIn.Addr = MouseXPos then
+        if RegAccessIn.Cmd = REG_READ then
+          RegAccessOut.Val <= "1";
+          RegAccessOut.Data(MouseXPos_D'length-1 downto 0) <= MouseXPos_D;
+          RegAccessOut.Cmd <= conv_word(REG_READ, RegAccessOut.Cmd'length);
+        else
+          MouseXPos_N <= RegAccessIn.Data(MouseXPos_N'length-1 downto 0);
         end if;
       end if;
     end if;
