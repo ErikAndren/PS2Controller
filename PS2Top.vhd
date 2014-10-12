@@ -57,7 +57,7 @@ begin
       SinkFreq   => 32000
       )
     port map (
-      Clk     => Clk,
+      Clk     => Clk25MHz,
       RstN    => Rst_N,
       Clk_out => Clk64khz
       );
