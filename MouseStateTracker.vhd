@@ -174,6 +174,16 @@ begin
           MouseXPos_N <= RegAccessIn.Data(MouseXPos_N'length-1 downto 0);
         end if;
       end if;
+
+      if RegAccessIn.Addr = MouseYPos then
+        if RegAccessIn.Cmd = REG_READ then
+          RegAccessOut.Val <= "1";
+          RegAccessOut.Data(MouseYPos_D'length-1 downto 0) <= MouseYPos_D;
+          RegAccessOut.Cmd <= conv_word(REG_READ, RegAccessOut.Cmd'length);
+        else
+          MouseYPos_N <= RegAccessIn.Data(MouseYPos_N'length-1 downto 0);
+        end if;
+      end if;
     end if;
   end process;
 
