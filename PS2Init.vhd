@@ -97,17 +97,6 @@ begin
         PS2HostCmdVal <= '1';
         PS2InitFsm_N  <= PS2InitFsm_D + 1;
 
-      --when 5 =>
-      --  if PS2DevRespVal = '1' then
-      --    if PS2DevResp = 16#FA# then
-      --       -- Expect Acknowledge
-      --       PS2InitFsm_N <= PS2InitFsm_D + 1;
-      --    else
-      --      -- Try with reset again
-      --       PS2InitFsm_N <= (others => '0');            
-      --    end if;
-      --  end if;
-
       when 5 =>
         -- Done state, we are now in stream mode with reporting enabled
         Streaming <= '1';
