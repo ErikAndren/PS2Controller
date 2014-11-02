@@ -44,11 +44,8 @@ begin
     if RstN = '0' then
       PacketCnt_D                   <= (others => '0');
       --
-      MouseXPos_D                   <= (others => '0');
-      MouseXPos_D(MouseXPos_D'high) <= '1';
-      --
-      MouseYPos_D                   <= (others => '0');
-      MouseYPos_D(MouseYPos_D'high) <= '1';
+      MouseXPos_D                   <= conv_word(16#AA#, MouseXPos_D'length);
+      MouseYPos_D                   <= conv_word(16#65#, MouseYPos_D'length);
       --
       TempXPos_D                    <= (others => '0');
       TempYPos_D                    <= (others => '0');
@@ -81,11 +78,8 @@ begin
     TempYPos_N  <= TempYPos_D;
 
     if Streaming = '0' then
-      MouseXPos_N                   <= (others => '0');
-      MouseXPos_N(MouseXPos_D'high) <= '1';
-      --
-      MouseYPos_N                   <= (others => '0');
-      MouseYPos_N(MouseYPos_D'high) <= '1';
+      MouseXPos_N                   <= conv_word(16#AA#, MouseXPos_D'length);
+      MouseYPos_N                   <= conv_word(16#65#, MouseYPos_D'length);
     end if;
     
     if PacketInVal = '1' and Streaming = '1' then
